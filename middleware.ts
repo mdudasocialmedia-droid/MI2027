@@ -3,9 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request,
-  });
+  let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,9 +18,7 @@ export async function middleware(request: NextRequest) {
             request.cookies.set(name, value);
           });
 
-          response = NextResponse.next({
-            request,
-          });
+          response = NextResponse.next({ request });
 
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options);
@@ -32,8 +28,39 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Verifica a identidade e permite renovar a sessão.
-  await supabase.auth.getClaims();
+  // Confirma se existe um usuário autenticado.
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  const path = request.nextUrl.pathname;
+
+  // Páginas disponíveis sem login.
+  const publicRoutes = [
+    "/login",
+    "/registro",
+    "/recuperar",
+    "/nova-senha",
+  ];
+
+  const isPublicRoute = publicRoutes.includes(path);
+
+  // Visitantes sem login vão para a página de acesso.
+  if ((error || !user) && !isPublicRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
+  // Usuários autenticados não precisam voltar ao login.
+  if (user && (path === "/login" || path === "/registro")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
 
   return response;
 }
