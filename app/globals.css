@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+
+* { box-sizing: border-box; }
+
+html { background: #fff9f0; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: #182142;
+  background:
+    radial-gradient(circle at 4% 3%, rgba(255, 107, 120, .13), transparent 22rem),
+    radial-gradient(circle at 92% 85%, rgba(118, 220, 192, .16), transparent 24rem),
+    #fff9f0;
+  font-family: "Inter Variable", sans-serif;
+}
+
+button, input { font: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible {
+  outline: 3px solid rgba(121, 84, 246, .24);
+  outline-offset: 2px;
+}
+
+::selection { background: #dcd1ff; color: #3d268f; }
+
+@layer components {
+  .card {
+    @apply rounded-[28px] border border-white/80 bg-white/80 shadow-card backdrop-blur-sm;
+  }
+
+  .icon-button {
+    @apply inline-flex size-9 items-center justify-center rounded-xl text-slate-500 transition hover:-translate-y-0.5 hover:bg-violet/10 hover:text-violet;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-violet/10 bg-white px-3.5 py-3 text-sm text-ink outline-none transition placeholder:text-slate-300 focus:border-violet/40;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
