@@ -21,8 +21,10 @@ import {
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { DesktopSidebar, Logo, MobileNav } from "@/components/app-navigation";
+import { DiaryHomeSection, getNotifications, NotificationsPanel, SearchPanel } from "@/components/dashboard-utilities";
+import { initials, useUserProfile } from "@/lib/profile";
 import { calculateCurrentXp, createId, parseDate, type PlannerGoal, type PlannerTask, toDateKey, usePlannerStore } from "@/lib/planner-store";
 
 type Task = PlannerTask;
@@ -37,11 +39,21 @@ const habitConfig = [
 
 export function Dashboard() {
   const { data, updateData } = usePlannerStore();
+  const { profile } = useUserProfile();
   const tasks = data.tasks.filter((task) => task.date === data.selectedDate);
   const [newTask, setNewTask] = useState("");
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
+  const [overlay, setOverlay] = useState<"search" | "notifications" | null>(null);
+  const [readNotifications, setReadNotifications] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const value = JSON.parse(localStorage.getItem("luna-planner-read-notifications") ?? "[]");
+      if (Array.isArray(value)) setReadNotifications(value.filter((item): item is string => typeof item === "string"));
+    } catch { /* A malformed local preference must not prevent the planner from loading. */ }
+  }, []);
 
   const completedTasks = tasks.filter((task) => task.done).length;
   const completedHabits = data.habitItems.filter((habit) => habit.checkIns.includes(data.selectedDate)).length;
@@ -82,7 +94,7 @@ export function Dashboard() {
       <DesktopSidebar active="dashboard" />
 
       <main className="mx-auto w-full max-w-[1500px] px-4 pb-28 pt-5 sm:px-6 lg:ml-[252px] lg:px-8 lg:pb-10 lg:pt-8 xl:px-10">
-        <Header date={data.selectedDate} />
+        <Header date={data.selectedDate} profile={profile} notificationCount={getNotifications(data).filter((item) => !readNotifications.includes(item.id)).length} onSearch={() => setOverlay("search")} onNotifications={() => setOverlay("notifications")} />
 
         <section className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,.8fr)]">
           <div className="space-y-5">
@@ -115,31 +127,34 @@ export function Dashboard() {
             <MotivationCard />
           </div>
         </section>
+        <DiaryHomeSection date={data.selectedDate} />
       </main>
 
       <MobileNav active="dashboard" />
+      {overlay === "search" && <SearchPanel data={data} onClose={() => setOverlay(null)} />}
+      {overlay === "notifications" && <NotificationsPanel data={data} onClose={() => setOverlay(null)} onReadAll={(ids) => setReadNotifications((current) => Array.from(new Set([...current, ...ids])))} />}
     </div>
   );
 }
 
-function Header({ date }: { date: string }) {
+function Header({ date, profile, notificationCount, onSearch, onNotifications }: { date: string; profile: ReturnType<typeof useUserProfile>["profile"]; notificationCount: number; onSearch: () => void; onNotifications: () => void }) {
   const dateLabel = new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(parseDate(date));
   return (
     <header className="flex items-start justify-between gap-4">
       <div>
         <div className="lg:hidden"><Logo /></div>
         <p className="mt-6 text-xs font-bold uppercase tracking-[.19em] text-violet lg:mt-0">{dateLabel}</p>
-        <h1 className="mt-2 font-display text-[32px] font-extrabold leading-tight tracking-[-.045em] sm:text-[40px]">¡Hola, Duda! <span className="inline-block animate-float">☀️</span></h1>
+        <h1 className="mt-2 font-display text-[32px] font-extrabold leading-tight tracking-[-.045em] sm:text-[40px]">¡Hola, {profile?.displayName ?? "Luna"}! <span className="inline-block animate-float">☀️</span></h1>
         <p className="mt-1 text-sm text-slate-500 sm:text-base">Hoy es un gran día para construir el año que sueñas.</p>
       </div>
       <div className="flex items-center gap-1 sm:gap-2">
-        <button className="icon-button hidden sm:inline-flex" aria-label="Buscar"><Search size={20} /></button>
-        <button className="icon-button relative" aria-label="Notificaciones"><Bell size={20} /><span className="absolute right-2 top-2 size-2 rounded-full bg-coral ring-2 ring-cream" /></button>
-        <button className="ml-1 flex items-center gap-2 rounded-2xl p-1.5 transition hover:bg-white sm:ml-2" aria-label="Abrir perfil">
-          <span className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-yellow via-coral to-violet text-sm font-extrabold text-white ring-4 ring-white">DU</span>
-          <span className="hidden text-left sm:block"><span className="block text-sm font-bold">Duda</span><span className="block text-[11px] text-slate-500">Luna Planner</span></span>
+        <button onClick={onSearch} className="icon-button hidden sm:inline-flex" aria-label="Buscar"><Search size={20} /></button>
+        <button onClick={onNotifications} className="icon-button relative" aria-label="Notificaciones"><Bell size={20} />{notificationCount > 0 && <span className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-coral px-1 text-[9px] font-bold text-white ring-2 ring-cream">{notificationCount > 9 ? "9+" : notificationCount}</span>}</button>
+        <a href="/perfil" className="ml-1 flex items-center gap-2 rounded-2xl p-1.5 transition hover:bg-white sm:ml-2" aria-label="Abrir perfil">
+          {profile?.avatarUrl ? <img src={profile.avatarUrl} alt="" className="size-10 rounded-full object-cover ring-4 ring-white" /> : <span className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-yellow via-coral to-violet text-sm font-extrabold text-white ring-4 ring-white">{initials(profile?.displayName ?? "Luna")}</span>}
+          <span className="hidden text-left sm:block"><span className="block text-sm font-bold">{profile?.displayName ?? ""}</span><span className="block text-[11px] text-slate-500">Luna Planner</span></span>
           <ChevronDown className="hidden text-slate-400 sm:block" size={16} />
-        </button>
+        </a>
       </div>
     </header>
   );

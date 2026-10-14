@@ -1,6 +1,6 @@
 "use client";
 
-import { BookHeart, CalendarDays, Heart, Home, MoonStar, Sparkles, Target, Trophy, WalletCards } from "lucide-react";
+import { CalendarDays, Check, Heart, Home, MoonStar, Sparkles, Target, WalletCards } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { LanguageSelector } from "@/components/i18n-provider";
@@ -14,8 +14,6 @@ const navItems: { label: string; icon: LucideIcon; page?: Page; href?: string }[
   { label: "Hábitos", icon: Heart, page: "habits", href: "/habitos" },
   { label: "Metas", icon: Target, page: "goals", href: "/metas" },
   { label: "Dinero", icon: WalletCards, page: "money", href: "/dinero" },
-  { label: "Diario", icon: BookHeart, page: "diary", href: "/diario" },
-  { label: "Logros", icon: Trophy, page: "achievements", href: "/logros" },
 ];
 
 export function Logo() {
@@ -30,7 +28,8 @@ export function DesktopSidebar({ active }: { active: Page }) {
         {navItems.map(({ label, icon: Icon, page, href }) => {
           const selected = page === active;
           const style = `flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${selected ? "bg-violet text-white shadow-soft" : "text-slate-500 hover:bg-violet/10 hover:text-violet"}`;
-          const content = <><Icon size={19} strokeWidth={selected ? 2.5 : 2} /><span>{label}</span></>;
+          const icon = label === "Hábitos" ? <span className="relative"><Icon size={19} strokeWidth={selected ? 2.5 : 2} /><Check className="absolute -bottom-1 -right-1 rounded-full bg-white p-px text-violet" size={10} strokeWidth={3} /></span> : <Icon size={19} strokeWidth={selected ? 2.5 : 2} />;
+          const content = <>{icon}<span>{label}</span></>;
           return href ? <Link key={label} href={href} aria-current={selected ? "page" : undefined} className={style}>{content}</Link> : <button key={label} type="button" className={style} title="Próximamente">{content}</button>;
         })}
       </nav>
@@ -50,7 +49,8 @@ export function MobileNav({ active }: { active: Page }) {
       {navItems.map(({ label, icon: Icon, page, href }) => {
         const selected = page === active;
         const style = `flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[9px] font-bold transition sm:text-[10px] ${selected ? "bg-violet/10 text-violet" : "text-slate-400"}`;
-        const content = <><Icon size={19} fill={selected ? "currentColor" : "none"} /><span>{label}</span></>;
+        const icon = label === "Hábitos" ? <span className="relative"><Icon size={19} fill={selected ? "currentColor" : "none"} /><Check className="absolute -bottom-1 -right-1 rounded-full bg-white p-px text-violet" size={10} strokeWidth={3} /></span> : <Icon size={19} fill={selected ? "currentColor" : "none"} />;
+        const content = <>{icon}<span>{label}</span></>;
         return href ? <Link key={label} href={href} aria-current={selected ? "page" : undefined} className={style}>{content}</Link> : <button key={label} type="button" className={style} title="Próximamente">{content}</button>;
       })}
     </nav></>

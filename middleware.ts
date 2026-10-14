@@ -3,6 +3,14 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+
+  // O webhook e servidor-para-servidor; a rota valida o X-HOTMART-HOTTOK antes
+  // de tocar no Supabase. Todas as rotas de utilizador continuam protegidas abaixo.
+  if (path === "/api/webhooks/hotmart") {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -27,8 +35,6 @@ export async function middleware(request: NextRequest) {
       },
     }
   );
-
-  const path = request.nextUrl.pathname;
 
   const publicRoutes = [
     "/login",

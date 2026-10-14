@@ -5,6 +5,7 @@ import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { DesktopSidebar, Logo, MobileNav } from "@/components/app-navigation";
+import { AchievementsSummary } from "@/components/achievements-summary";
 import { createId, parseDate, type GoalCategory, type GoalMilestone, type PlannerGoal, usePlannerStore } from "@/lib/planner-store";
 import { getPlanningYear } from "@/lib/planner-preferences";
 
@@ -55,6 +56,7 @@ export function GoalsPage() {
           {goals.length === 0 && <div className="card col-span-full py-16 text-center"><Target className="mx-auto text-violet" size={32} /><p className="mt-4 font-display text-xl font-extrabold">Tu próxima meta empieza aquí</p><button onClick={() => setModal("new")} className="mt-3 text-sm font-bold text-violet">+ Crear mi primera meta</button></div>}
         </div>
       </section>
+      <AchievementsSummary />
     </main>
     <MobileNav active="goals" />
     {modal && <GoalModal initial={modal === "new" ? null : modal} goals={goals} onClose={() => setModal(null)} onSave={saveGoal} />}

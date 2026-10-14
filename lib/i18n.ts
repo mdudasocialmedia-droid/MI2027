@@ -148,6 +148,24 @@ export const portugueseTranslations: Record<string, string> = {
   Sueldo: "Salário", Freelance: "Trabalho independente", Inversiones: "Investimentos", "Otros ingresos": "Outros rendimentos",
   Educación: "Educação", "Otros gastos": "Outras despesas", "Muy triste": "Muito triste", "Bajo de ánimo": "Em baixo",
   Tranquilo: "Tranquilo", Feliz: "Feliz", Genial: "Ótimo",
+  "Conquistas": "Conquistas", "Celebra tu progreso": "Celebra o teu progresso", "Cada logro se calcula con tus acciones registradas.": "Cada conquista é calculada com as tuas ações registadas.",
+  "Insignias desbloqueadas": "Insígnias desbloqueadas", "Sigue registrando tus avances para desbloquear más.": "Continua a registar os teus progressos para desbloqueares mais.",
+  "¡Has desbloqueado todas las insignias!": "Desbloqueaste todas as insígnias!", "Tu constancia ya tiene todas las insignias disponibles.": "A tua consistência já tem todas as insígnias disponíveis.",
+  "Mi perfil": "O meu perfil", "Personaliza cómo apareces en tu espacio.": "Personaliza a forma como apareces no teu espaço.", "Cambiar fotografía": "Alterar fotografia", "Fotografía de perfil": "Fotografia de perfil",
+  "Nombre visible": "Nome visível", "El correo está asociado a la cuenta y no se puede modificar desde esta pantalla.": "O e-mail está associado à conta e não pode ser alterado neste ecrã.",
+  "Idioma preferido": "Idioma preferido", "Español (España)": "Espanhol (Espanha)", "Português (Portugal)": "Português (Portugal)", "Guardar cambios": "Guardar alterações", "Cambios guardados correctamente.": "Alterações guardadas com sucesso.",
+  "Cerrarás la sesión de Luna Planner en este dispositivo.": "Terminarás a sessão do Luna Planner neste dispositivo.", "Terminar sesión": "Terminar sessão",
+  "Buscar en agenda, hábitos, metas y diario...": "Pesquisar na agenda, hábitos, objetivos e diário...", "No hay resultados en tus datos actuales.": "Não há resultados nos teus dados atuais.",
+  "Notificaciones": "Notificações", "Tu planificación": "O teu planeamento", "Marcar como leídas": "Marcar como lidas", "No hay recordatorios pendientes para esta fecha.": "Não há lembretes pendentes para esta data.",
+  "Compromiso para hoy": "Compromisso para hoje", "Hábito pendiente hoy": "Hábito pendente hoje", "Plazo próximo:": "Prazo próximo:",
+  "Un momento para ti": "Um momento para ti", "¿Qué ha hecho especial este día?": "O que tornou este dia especial?", "Se guarda en tu diario actual": "É guardado no teu diário atual", "Entrada guardada": "Registo guardado",
+  "Entradas recientes": "Registos recentes", "Tus palabras, en un solo lugar.": "As tuas palavras, num só lugar.", "Ver diario": "Ver diário", "Aún no hay entradas guardadas.": "Ainda não há registos guardados.",
+  "Tu sesión ha terminado.": "A tua sessão terminou.", "JPG, PNG o WebP · máximo 2 MB": "JPG, PNG ou WebP · máximo de 2 MB",
+  "La configuración de perfiles o fotografías aún no está disponible en Supabase. Revisa el script de configuración antes de intentar guardar una imagen.": "A configuração de perfis ou fotografias ainda não está disponível no Supabase. Revê o script de configuração antes de tentares guardar uma imagem.",
+  "La imagen se guardó en tu cuenta, pero falta configurar la tabla profiles.": "A imagem foi guardada na tua conta, mas falta configurar a tabela profiles.",
+  "Fotografía de perfil actualizada.": "Fotografia de perfil atualizada.", "Tu nombre se guardó en la cuenta. Falta configurar la tabla profiles para sincronizarlo allí.": "O teu nome foi guardado na conta. Falta configurar a tabela profiles para o sincronizar lá.",
+  "No fue posible guardar los cambios.": "Não foi possível guardar as alterações.", "No fue posible actualizar la fotografía.": "Não foi possível atualizar a fotografia.",
+  "Cerrar búsqueda": "Fechar pesquisa", "Cerrar notificaciones": "Fechar notificações", "Estado": "Estado",
 };
 
 export function translateToPortuguese(input: string): string {
@@ -177,4 +195,3 @@ export function translateToPortuguese(input: string): string {
     .replace(/\bsept(?=\.?\s+\d{4})/gi, "set").replace(/\boct(?=\.?\s+\d{4})/gi, "out").replace(/\bdic(?=\.?\s+\d{4})/gi, "dez");
   return `${leading}${translated}${trailing}`;
 }
-
