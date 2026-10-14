@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 export const STORAGE_KEY = "mi2027-dashboard";
-export const DASHBOARD_DATE = "2026-10-13";
+export const DASHBOARD_DATE = toDateKey(new Date());
 
 export type PlannerTask = {
   id: string;
@@ -116,8 +116,8 @@ const starterGoal: PlannerGoal = {
   id: "goal-annual-savings",
   title: "Ahorrar 6.000 €",
   category: "Finanzas",
-  startDate: "2027-01-01",
-  dueDate: "2027-12-31",
+  startDate: `${new Date().getFullYear()}-01-01`,
+  dueDate: `${new Date().getFullYear()}-12-31`,
   progress: 40,
   color: "#76DCC0",
   annual: true,
@@ -143,7 +143,7 @@ export const defaultPlannerData: PlannerData = {
 };
 
 function isDate(value: unknown): value is string {
-  return typeof value === "string" && /^20(26|27)-\d{2}-\d{2}$/.test(value);
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(parseDate(value).getTime());
 }
 
 export function loadPlannerData(): PlannerData {
@@ -153,7 +153,7 @@ export function loadPlannerData(): PlannerData {
     if (!raw) return defaultPlannerData;
     const saved = JSON.parse(raw) as Record<string, unknown>;
     const legacyDay = typeof saved.day === "number" ? saved.day : 13;
-    const selectedDate = isDate(saved.selectedDate) ? saved.selectedDate : `2026-10-${String(legacyDay).padStart(2, "0")}`;
+    const selectedDate = isDate(saved.selectedDate) ? saved.selectedDate : `${DASHBOARD_DATE.slice(0, 8)}${String(legacyDay).padStart(2, "0")}`;
     const tasks = Array.isArray(saved.tasks)
       ? saved.tasks.map((task, index) => {
           const item = task as Partial<PlannerTask> & { id?: string | number };

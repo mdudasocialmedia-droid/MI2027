@@ -23,6 +23,7 @@ import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { DesktopSidebar, Logo, MobileNav } from "@/components/app-navigation";
 import { createId, parseDate, type HabitFrequency, type PlannerHabit, toDateKey, usePlannerStore } from "@/lib/planner-store";
+import { getPlanningYear } from "@/lib/planner-preferences";
 
 const locale = "es-ES";
 const habitColors = ["#2DA9E9", "#FF6B78", "#7954F6", "#E74788", "#43C5A2", "#F5B82E"];
@@ -36,8 +37,9 @@ const iconOptions: { value: PlannerHabit["icon"]; label: string; icon: LucideIco
 ];
 
 function currentDateKey() {
-  const today = toDateKey(new Date());
-  return today >= "2026-01-01" && today <= "2027-12-31" ? today : "2027-01-01";
+  const today = new Date();
+  today.setFullYear(getPlanningYear());
+  return toDateKey(today);
 }
 
 export function HabitsPage() {

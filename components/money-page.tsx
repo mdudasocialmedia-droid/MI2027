@@ -6,6 +6,7 @@ import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { DesktopSidebar, Logo, MobileNav } from "@/components/app-navigation";
 import { createId, type MoneyTransaction, type MonthlyBudget, type TransactionType, usePlannerStore } from "@/lib/planner-store";
+import { getPlanningYear } from "@/lib/planner-preferences";
 
 const locale = "es-ES";
 const incomeCategories = ["Sueldo", "Freelance", "Regalos", "Ventas", "Inversiones", "Otros ingresos"];
@@ -14,7 +15,7 @@ const expenseColors = ["#7954F6", "#FF6B78", "#F5B82E", "#43C5A2", "#4AA8E8", "#
 
 function currentMonth() {
   const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  return `${getPlanningYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
 export function MoneyPage() {

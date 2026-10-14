@@ -4,6 +4,7 @@ import { ArrowLeft, BookHeart, CalendarDays, Check, ChevronLeft, ChevronRight, H
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { DesktopSidebar, Logo, MobileNav } from "@/components/app-navigation";
+import { getPlanningYear } from "@/lib/planner-preferences";
 
 const STORAGE_KEY = "mi2027-diary-v1";
 const locale = "es-ES";
@@ -20,7 +21,7 @@ type DiaryEntry = { id: string; date: string; mood: Mood; content: string; grati
 
 function todayKey() {
   const date = new Date();
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  return `${getPlanningYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 export function DiaryPage() {
@@ -45,7 +46,7 @@ export function DiaryPage() {
         if (Array.isArray(value)) setEntries(value as DiaryEntry[]);
       }
     } catch {
-      // La clave del diario es independiente: un dato dañado no afecta al resto de Mi 2027.
+      // La clave histórica se conserva para no perder entradas existentes.
     } finally {
       setReady(true);
     }

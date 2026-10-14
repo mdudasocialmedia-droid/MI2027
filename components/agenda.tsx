@@ -27,6 +27,7 @@ import {
   toDateKey,
   usePlannerStore,
 } from "@/lib/planner-store";
+import { getPlanningYear } from "@/lib/planner-preferences";
 
 type CalendarView = "month" | "week" | "day";
 
@@ -49,8 +50,9 @@ const emptyEvent = (date: string): Omit<PlannerEvent, "id" | "createdAt"> => ({
 });
 
 function clampInitialDate() {
-  const today = toDateKey(new Date());
-  return today >= "2026-01-01" && today <= "2027-12-31" ? today : "2027-01-01";
+  const today = new Date();
+  today.setFullYear(getPlanningYear());
+  return toDateKey(today);
 }
 
 export function Agenda() {
@@ -64,7 +66,7 @@ export function Agenda() {
   const [editingTaskTitle, setEditingTaskTitle] = useState("");
 
   useEffect(() => {
-    if (ready && data.selectedDate >= "2026-01-01" && data.selectedDate <= "2027-12-31") setSelectedDate(data.selectedDate);
+    if (ready && /^\d{4}-\d{2}-\d{2}$/.test(data.selectedDate)) setSelectedDate(data.selectedDate);
   }, [ready, data.selectedDate]);
 
   const selectedEvents = useMemo(
@@ -83,8 +85,7 @@ export function Agenda() {
     if (view === "month") current.setMonth(current.getMonth() + direction);
     if (view === "week") current.setDate(current.getDate() + direction * 7);
     if (view === "day") current.setDate(current.getDate() + direction);
-    const next = toDateKey(current);
-    if (next >= "2026-01-01" && next <= "2027-12-31") chooseDate(next);
+    chooseDate(toDateKey(current));
   }
 
   function addTask(event: FormEvent) {
@@ -198,12 +199,11 @@ function MonthView({ selectedDate, events, onSelect }: { selectedDate: string; e
       <div className="grid grid-cols-7 overflow-hidden rounded-[20px] border border-slate-100 bg-slate-100 gap-px">
         {days.map((date) => {
           const key = toDateKey(date);
-          const outOfRange = key < "2026-01-01" || key > "2027-12-31";
           const dayEvents = events.filter((event) => occursOnDate(event, key)).slice(0, 3);
           const selected = key === selectedDate;
           const isToday = key === today;
           const muted = date.getMonth() !== selectedMonth;
-          return <button key={key} disabled={outOfRange} onClick={() => onSelect(key)} className={`group relative min-h-[74px] bg-white p-1.5 text-left transition hover:bg-violet/[.04] disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-[116px] sm:p-2.5 ${selected ? "z-10 ring-2 ring-inset ring-violet" : ""}`}>
+          return <button key={key} onClick={() => onSelect(key)} className={`group relative min-h-[74px] bg-white p-1.5 text-left transition hover:bg-violet/[.04] sm:min-h-[116px] sm:p-2.5 ${selected ? "z-10 ring-2 ring-inset ring-violet" : ""}`}>
             <span className={`grid size-7 place-items-center rounded-full text-xs font-bold sm:size-8 sm:text-sm ${selected ? "bg-violet text-white" : isToday ? "bg-yellow text-ink" : muted ? "text-slate-300" : "text-ink"}`}>{date.getDate()}</span>
             <div className="mt-1.5 flex flex-wrap gap-1 sm:block sm:space-y-1">
               {dayEvents.map((event) => <div key={event.id} className="flex items-center gap-1 sm:rounded-lg sm:px-1.5 sm:py-1" style={{ backgroundColor: `${event.color}16` }}><span className="size-1.5 shrink-0 rounded-full" style={{ backgroundColor: event.color }} /><span className="hidden truncate text-[10px] font-semibold sm:block" style={{ color: event.color }}>{event.title}</span></div>)}
@@ -223,10 +223,9 @@ function WeekView({ selectedDate, events, onSelect }: { selectedDate: string; ev
       <div className="grid min-w-[760px] grid-cols-7 gap-2">
         {days.map((date) => {
           const key = toDateKey(date);
-          const outOfRange = key < "2026-01-01" || key > "2027-12-31";
           const dayEvents = events.filter((event) => occursOnDate(event, key)).sort(compareEvents);
           const selected = key === selectedDate;
-          return <button key={key} disabled={outOfRange} onClick={() => onSelect(key)} className={`min-h-[430px] rounded-[20px] border p-2 text-left transition disabled:cursor-not-allowed disabled:opacity-40 ${selected ? "border-violet bg-violet/[.035] shadow-sm" : "border-slate-100 bg-[#FFFCF8] hover:border-violet/30"}`}>
+          return <button key={key} onClick={() => onSelect(key)} className={`min-h-[430px] rounded-[20px] border p-2 text-left transition ${selected ? "border-violet bg-violet/[.035] shadow-sm" : "border-slate-100 bg-[#FFFCF8] hover:border-violet/30"}`}>
             <div className="text-center"><span className="block text-[10px] font-bold uppercase text-slate-400">{new Intl.DateTimeFormat(locale, { weekday: "short" }).format(date)}</span><span className={`mx-auto mt-1 grid size-9 place-items-center rounded-full font-display font-extrabold ${selected ? "bg-violet text-white" : key === today ? "bg-yellow" : ""}`}>{date.getDate()}</span></div>
             <div className="mt-4 space-y-2">{dayEvents.map((event) => <div key={event.id} className="rounded-xl border-l-[3px] bg-white p-2 shadow-sm" style={{ borderLeftColor: event.color }}><span className="block truncate text-[10px] font-bold">{event.title}</span><span className="mt-1 block text-[9px] text-slate-400">{event.allDay ? "Todo el día" : event.startTime}</span></div>)}</div>
           </button>;
@@ -296,7 +295,7 @@ function EventModal({ initial, editingId, events, onClose, onSave }: { initial: 
     if (saving) return;
     const title = form.title.trim();
     if (!title) return setError("Escribe un título para el compromiso.");
-    if (form.date < "2026-01-01" || form.date > "2027-12-31") return setError("La fecha debe estar entre 2026 y 2027.");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(form.date)) return setError("Selecciona una fecha válida.");
     if (!form.allDay && (!form.startTime || !form.endTime || form.endTime <= form.startTime)) return setError("La hora final debe ser posterior a la inicial.");
     const duplicate = events.some((item) => item.id !== editingId && item.title.trim().toLocaleLowerCase(locale) === title.toLocaleLowerCase(locale) && item.date === form.date && item.startTime === form.startTime && item.endTime === form.endTime);
     if (duplicate) return setError("Ya existe un compromiso igual en esa fecha y hora.");
@@ -312,7 +311,7 @@ function EventModal({ initial, editingId, events, onClose, onSave }: { initial: 
         <div className="mt-6 space-y-4">
           <Field label="Título"><input autoFocus value={form.title} onChange={(event) => set("title", event.target.value)} placeholder="Ej. Reunión del proyecto" className="field" /></Field>
           <Field label="Descripción"><textarea value={form.description} onChange={(event) => set("description", event.target.value)} placeholder="Añade notas o detalles..." rows={3} className="field resize-none" /></Field>
-          <div className="grid gap-4 sm:grid-cols-2"><Field label="Fecha"><input type="date" min="2026-01-01" max="2027-12-31" value={form.date} onChange={(event) => set("date", event.target.value)} className="field" /></Field><Field label="Categoría"><select value={form.category} onChange={(event) => set("category", event.target.value)} className="field">{categories.map((category) => <option key={category}>{category}</option>)}</select></Field></div>
+          <div className="grid gap-4 sm:grid-cols-2"><Field label="Fecha"><input type="date" value={form.date} onChange={(event) => set("date", event.target.value)} className="field" /></Field><Field label="Categoría"><select value={form.category} onChange={(event) => set("category", event.target.value)} className="field">{categories.map((category) => <option key={category}>{category}</option>)}</select></Field></div>
           <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-violet/10 bg-white px-4 py-3"><span><span className="block text-sm font-bold">Evento de día entero</span><span className="block text-xs text-slate-400">Sin horario específico</span></span><input type="checkbox" checked={form.allDay} onChange={(event) => set("allDay", event.target.checked)} className="size-5 accent-violet" /></label>
           {!form.allDay && <div className="grid grid-cols-2 gap-4"><Field label="Empieza"><input type="time" value={form.startTime} onChange={(event) => set("startTime", event.target.value)} className="field" /></Field><Field label="Termina"><input type="time" value={form.endTime} onChange={(event) => set("endTime", event.target.value)} className="field" /></Field></div>}
           <div className="grid gap-4 sm:grid-cols-2"><Field label="Repetición"><select value={form.recurrence} onChange={(event) => set("recurrence", event.target.value as Recurrence)} className="field">{Object.entries(recurrenceLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></Field><Field label="Color"><div className="flex h-[46px] items-center gap-2 rounded-xl border border-violet/10 bg-white px-3">{colors.map((color) => <button key={color} type="button" onClick={() => set("color", color)} aria-label={`Elegir color ${color}`} aria-pressed={form.color === color} className={`size-7 rounded-full transition hover:scale-110 ${form.color === color ? "ring-2 ring-offset-2" : ""}`} style={{ backgroundColor: color, color }} />)}</div></Field></div>

@@ -82,7 +82,7 @@ export function Dashboard() {
       <DesktopSidebar active="dashboard" />
 
       <main className="mx-auto w-full max-w-[1500px] px-4 pb-28 pt-5 sm:px-6 lg:ml-[252px] lg:px-8 lg:pb-10 lg:pt-8 xl:px-10">
-        <Header />
+        <Header date={data.selectedDate} />
 
         <section className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,.8fr)]">
           <div className="space-y-5">
@@ -122,12 +122,13 @@ export function Dashboard() {
   );
 }
 
-function Header() {
+function Header({ date }: { date: string }) {
+  const dateLabel = new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(parseDate(date));
   return (
     <header className="flex items-start justify-between gap-4">
       <div>
         <div className="lg:hidden"><Logo /></div>
-        <p className="mt-6 text-xs font-bold uppercase tracking-[.19em] text-violet lg:mt-0">Martes, 13 de octubre</p>
+        <p className="mt-6 text-xs font-bold uppercase tracking-[.19em] text-violet lg:mt-0">{dateLabel}</p>
         <h1 className="mt-2 font-display text-[32px] font-extrabold leading-tight tracking-[-.045em] sm:text-[40px]">¡Hola, Duda! <span className="inline-block animate-float">☀️</span></h1>
         <p className="mt-1 text-sm text-slate-500 sm:text-base">Hoy es un gran día para construir el año que sueñas.</p>
       </div>
@@ -136,7 +137,7 @@ function Header() {
         <button className="icon-button relative" aria-label="Notificaciones"><Bell size={20} /><span className="absolute right-2 top-2 size-2 rounded-full bg-coral ring-2 ring-cream" /></button>
         <button className="ml-1 flex items-center gap-2 rounded-2xl p-1.5 transition hover:bg-white sm:ml-2" aria-label="Abrir perfil">
           <span className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-yellow via-coral to-violet text-sm font-extrabold text-white ring-4 ring-white">DU</span>
-          <span className="hidden text-left sm:block"><span className="block text-sm font-bold">Duda</span><span className="block text-[11px] text-slate-500">Mi 2027</span></span>
+          <span className="hidden text-left sm:block"><span className="block text-sm font-bold">Duda</span><span className="block text-[11px] text-slate-500">Luna Planner</span></span>
           <ChevronDown className="hidden text-slate-400 sm:block" size={16} />
         </button>
       </div>

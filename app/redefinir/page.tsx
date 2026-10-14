@@ -100,12 +100,12 @@ export default function RedefinirPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#fff7ed] px-4 py-12 flex items-center justify-center">
-      <div className="w-full max-w-md rounded-[32px] bg-white p-8 shadow-xl border-4 border-[#f9a8d4]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,#f3e8ff_0,transparent_38%),radial-gradient(circle_at_bottom_right,#ffe4e6_0,transparent_42%)] bg-[#FFF9F0] px-4 py-12 flex items-center justify-center">
+      <div className="w-full max-w-md rounded-[32px] border border-white/90 bg-white/90 p-8 shadow-[0_24px_70px_rgba(121,84,246,.14)] backdrop-blur-xl">
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">🔐</div>
           <h1 className="text-4xl font-black text-[#ec4899]">
-            Mi 2027
+            Luna Planner
           </h1>
           <p className="mt-3 text-gray-600">
             ¡Un nuevo comienzo!
@@ -176,7 +176,7 @@ export default function RedefinirPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full rounded-2xl bg-[#ec4899] p-4 font-bold text-white disabled:opacity-60"
+                  className="w-full rounded-2xl bg-gradient-to-r from-[#7954F6] to-[#ec4899] p-4 font-bold text-white shadow-lg shadow-violet-200 transition hover:-translate-y-0.5 disabled:opacity-60"
                 >
                   {loading ? "Guardando..." : "Guardar nueva contraseña ✨"}
                 </button>
