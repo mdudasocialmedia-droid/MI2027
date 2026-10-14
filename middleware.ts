@@ -28,15 +28,8 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Confirma se existe um usuário autenticado.
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
   const path = request.nextUrl.pathname;
 
-  // Páginas disponíveis sem login.
   const publicRoutes = [
     "/login",
     "/registro",
@@ -46,16 +39,60 @@ export async function middleware(request: NextRequest) {
 
   const isPublicRoute = publicRoutes.includes(path);
 
-  // Visitantes sem login vão para a página de acesso.
-  if ((error || !user) && !isPublicRoute) {
+  // Verifica a identidade do usuário.
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  // Sem login: direciona para a página de login.
+  if ((authError || !user) && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";
     return NextResponse.redirect(url);
   }
 
-  // Usuários autenticados não precisam voltar ao login.
-  if (user && (path === "/login" || path === "/registro")) {
+  // Permite cadastro e recuperação de senha.
+  if (isPublicRoute) {
+    return response;
+  }
+
+  if (!user) {
+    return response;
+  }
+
+  // Consulta a autorização de acesso no Supabase.
+  const { data: access, error: accessError } = await supabase
+    .from("user_access")
+    .select("status, access_until")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const isActive = access?.status === "active";
+
+  const isNotExpired =
+    !access?.access_until ||
+    new Date(access.access_until).getTime() > Date.now();
+
+  const hasAccess =
+    !accessError && isActive && isNotExpired;
+
+  // Sem autorização: bloqueia o planner.
+  if (!hasAccess) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/sem-acesso";
+    url.search = "";
+
+    if (path === "/sem-acesso") {
+      return response;
+    }
+
+    return NextResponse.redirect(url);
+  }
+
+  // Usuário autorizado não precisa voltar ao login.
+  if (path === "/sem-acesso") {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     url.search = "";
