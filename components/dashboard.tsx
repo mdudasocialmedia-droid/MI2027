@@ -38,7 +38,7 @@ const habitConfig = [
 ] as const;
 
 export function Dashboard() {
-  const { data, updateData } = usePlannerStore();
+  const { data, updateData, legacyAvailable, importLegacyData } = usePlannerStore();
   const { profile } = useUserProfile();
   const tasks = data.tasks.filter((task) => task.date === data.selectedDate);
   const [newTask, setNewTask] = useState("");
@@ -95,6 +95,7 @@ export function Dashboard() {
 
       <main className="mx-auto w-full max-w-[1500px] px-4 pb-28 pt-5 sm:px-6 lg:ml-[252px] lg:px-8 lg:pb-10 lg:pt-8 xl:px-10">
         <Header date={data.selectedDate} profile={profile} notificationCount={getNotifications(data).filter((item) => !readNotifications.includes(item.id)).length} onSearch={() => setOverlay("search")} onNotifications={() => setOverlay("notifications")} />
+        {legacyAvailable && <aside className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-violet/20 bg-violet/5 p-4 text-sm"><span>Encontramos datos anteriores en este dispositivo. Solo impórtalos si son tuyos.</span><button type="button" onClick={() => void importLegacyData()} className="rounded-xl bg-violet px-4 py-2 font-bold text-white">Importar mis datos</button></aside>}
 
         <section className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,.8fr)]">
           <div className="space-y-5">

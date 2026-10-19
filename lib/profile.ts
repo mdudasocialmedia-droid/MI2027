@@ -65,7 +65,7 @@ export function useUserProfile() {
     const { data: row, error: profileError } = await supabase
       .from("profiles")
       .select("display_name, avatar_path")
-      .eq("id", user.id)
+      .eq("user_id", user.id)
       .maybeSingle<ProfileRow>();
 
     // Until the approved profile migration is applied, the authenticated metadata remains usable.
@@ -88,7 +88,7 @@ export function useUserProfile() {
     if (authError || !auth.user) throw new Error("No hay una sesión activa.");
     const { error: metadataError } = await supabase.auth.updateUser({ data: { display_name: clean } });
     if (metadataError) throw metadataError;
-    const { error: profileError } = await supabase.from("profiles").upsert({ id: auth.user.id, display_name: clean, updated_at: new Date().toISOString() });
+    const { error: profileError } = await supabase.from("profiles").upsert({ user_id: auth.user.id, display_name: clean });
     if (profileError) setProfileStorageReady(false);
     await refresh();
     return profileError;
@@ -109,7 +109,7 @@ export function useUserProfile() {
     }
     const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar_path: avatarPath } });
     if (metadataError) throw metadataError;
-    const { error: profileError } = await supabase.from("profiles").upsert({ id: auth.user.id, avatar_path: avatarPath, updated_at: new Date().toISOString() });
+    const { error: profileError } = await supabase.from("profiles").upsert({ user_id: auth.user.id, avatar_path: avatarPath });
     if (profileError) setProfileStorageReady(false);
     await refresh();
     return profileError;

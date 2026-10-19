@@ -154,6 +154,7 @@ export const portugueseTranslations: Record<string, string> = {
   "Mi perfil": "O meu perfil", "Personaliza cómo apareces en tu espacio.": "Personaliza a forma como apareces no teu espaço.", "Cambiar fotografía": "Alterar fotografia", "Fotografía de perfil": "Fotografia de perfil",
   "Nombre visible": "Nome visível", "El correo está asociado a la cuenta y no se puede modificar desde esta pantalla.": "O e-mail está associado à conta e não pode ser alterado neste ecrã.",
   "Idioma preferido": "Idioma preferido", "Español (España)": "Espanhol (Espanha)", "Português (Portugal)": "Português (Portugal)", "Guardar cambios": "Guardar alterações", "Cambios guardados correctamente.": "Alterações guardadas com sucesso.",
+  "Encontramos datos anteriores en este dispositivo. Solo impórtalos si son tuyos.": "Encontrámos dados anteriores neste dispositivo. Importa-os apenas se forem teus.", "Importar mis datos": "Importar os meus dados",
   "Cerrarás la sesión de Luna Planner en este dispositivo.": "Terminarás a sessão do Luna Planner neste dispositivo.", "Terminar sesión": "Terminar sessão",
   "Buscar en agenda, hábitos, metas y diario...": "Pesquisar na agenda, hábitos, objetivos e diário...", "No hay resultados en tus datos actuales.": "Não há resultados nos teus dados atuais.",
   "Notificaciones": "Notificações", "Tu planificación": "O teu planeamento", "Marcar como leídas": "Marcar como lidas", "No hay recordatorios pendientes para esta fecha.": "Não há lembretes pendentes para esta data.",

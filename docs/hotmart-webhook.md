@@ -27,8 +27,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
    where conrelid = 'public.user_access'::regclass;
    ```
 
-   The integration requires `user_id`, `status`, and `access_until`, and only writes the already-used lower-case value `active`. It does **not** assume that `inactive` is permitted. Revocation sets `access_until` to the current time, which the existing middleware denies.
-2. Review `supabase/hotmart-access.sql` against that result, then run it in the Supabase SQL Editor with an owner/admin role.
+   The integration requires `user_id`, `status`, and `access_until`, and only writes the already-used lower-case value `active`. It does **not** assume that `inactive` is permitted. Revocation sets `access_until` one second in the past, which the existing middleware denies deterministically.
+2. Review the canonical migration `supabase/migrations/20261015000001_hotmart_access.sql` against that result, then run it in the Supabase SQL Editor with an owner/admin role.
 3. Confirm that the executing role is allowed to create a trigger on `auth.users`. The trigger links purchases only after `email_confirmed_at` is set; it also covers users already registered when the purchase event arrives.
 4. Do not add browser RLS policies for `hotmart_purchases`, `hotmart_webhook_events`, or `hotmart_managed_access`. Browser roles have no table permissions and no `EXECUTE` permission on the security-definer helpers. Only `service_role` receives `EXECUTE` on the webhook RPC.
 

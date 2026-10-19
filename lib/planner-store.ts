@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase";
+import { createPlannerSnapshotIfAbsent, getPlannerUserId, loadPlannerSnapshot, savePlannerSnapshot } from "@/lib/planner-sync";
+import { readLegacyPlannerCache, readPlannerCache, writePlannerCache } from "@/lib/planner-storage";
 
 export const STORAGE_KEY = "mi2027-dashboard";
 export const DASHBOARD_DATE = toDateKey(new Date());
@@ -188,21 +191,97 @@ export function loadPlannerData(): PlannerData {
 export function usePlannerStore() {
   const [data, setData] = useState<PlannerData>(defaultPlannerData);
   const [ready, setReady] = useState(false);
+  const [legacyAvailable, setLegacyAvailable] = useState(false);
+  const userIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setData(loadPlannerData());
-    setReady(true);
+    let active = true;
+    let hydrationVersion = 0;
+    const supabase = createClient();
+    async function hydrate() {
+      const version = ++hydrationVersion;
+      setReady(false);
+      // Do not leave the previous account's planner on screen while the next
+      // session is being resolved.
+      userIdRef.current = null;
+      setData(defaultPlannerData);
+      setLegacyAvailable(false);
+      const userId = await getPlannerUserId();
+      if (!active || version !== hydrationVersion) return;
+      userIdRef.current = userId;
+      if (!userId) {
+        setReady(true);
+        return;
+      }
+      const cached = readPlannerCache(window.localStorage, userId);
+      try {
+        const remote = await loadPlannerSnapshot(userId);
+        if (!active || version !== hydrationVersion || userIdRef.current !== userId) return;
+        if (remote) {
+          writePlannerCache(window.localStorage, userId, remote);
+          setData(remote);
+        } else {
+          setData(cached ?? defaultPlannerData);
+          // Legacy data has no verifiable owner. It is only offered when this
+          // account has neither a local nor remote snapshot.
+          setLegacyAvailable(Boolean(readLegacyPlannerCache(window.localStorage)) && !cached);
+        }
+      } catch {
+        if (active && version === hydrationVersion && userIdRef.current === userId) {
+          setData(cached ?? defaultPlannerData);
+        }
+      } finally {
+        if (active && version === hydrationVersion && userIdRef.current === userId) setReady(true);
+      }
+    }
+    void hydrate();
+    const { data: listener } = supabase.auth.onAuthStateChange(() => { void hydrate(); });
+    return () => { active = false; listener.subscription.unsubscribe(); };
   }, []);
 
   function updateData(updater: (current: PlannerData) => PlannerData) {
     setData((current) => {
       const next = updater(current);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      const userId = userIdRef.current;
+      if (userId) {
+        writePlannerCache(localStorage, userId, next);
+        void savePlannerSnapshot(userId, next).catch(() => {
+          // The isolated user cache remains available offline and retries on a later edit.
+        });
+      }
       return next;
     });
   }
 
-  return { data, updateData, ready };
+  async function importLegacyData() {
+    const userId = userIdRef.current;
+    if (!userId) return false;
+    const legacy = readLegacyPlannerCache(localStorage);
+    if (!legacy) return false;
+    try {
+      const result = await createPlannerSnapshotIfAbsent(userId, legacy);
+      if (result === "created") {
+        writePlannerCache(localStorage, userId, legacy);
+        setData(legacy);
+        setLegacyAvailable(false);
+        return true;
+      }
+      // A concurrent or other-device snapshot won. Keep that source of truth.
+      const remote = await loadPlannerSnapshot(userId);
+      if (remote) {
+        writePlannerCache(localStorage, userId, remote);
+        setData(remote);
+      }
+      setLegacyAvailable(false);
+      return false;
+    } catch {
+      // Unknown-origin legacy data is never assigned while the cloud state
+      // cannot be checked. Existing per-user caches continue to work offline.
+      return false;
+    }
+  }
+
+  return { data, updateData, ready, legacyAvailable, importLegacyData };
 }
 
 export function createId(prefix: string) {

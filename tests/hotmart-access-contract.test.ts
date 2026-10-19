@@ -74,7 +74,7 @@ test("purchases link only to accounts with a confirmed matching email", () => {
 });
 
 test("the installed SQL contract protects product, access expiry, locks, and RPC execution", () => {
-  const sql = readFileSync(new URL("../supabase/hotmart-access.sql", import.meta.url), "utf8");
+  const sql = readFileSync(new URL("../supabase/migrations/20261015000001_hotmart_access.sql", import.meta.url), "utf8");
   assert.match(sql, /if p_product_id <> 8732001 then/);
   assert.match(sql, /now\(\) - interval '1 second'/);
   assert.match(sql, /pg_advisory_xact_lock\(hashtext\(trim\(p_transaction_id\)\)\)/);

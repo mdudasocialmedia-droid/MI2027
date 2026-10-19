@@ -7,7 +7,9 @@ export async function middleware(request: NextRequest) {
 
   // O webhook e servidor-para-servidor; a rota valida o X-HOTMART-HOTTOK antes
   // de tocar no Supabase. Todas as rotas de utilizador continuam protegidas abaixo.
-  if (path === "/api/webhooks/hotmart") {
+  // As páginas públicas não dependem de sessão. Retorná-las antes de criar o
+  // cliente evita que uma prévia local da landing page exija credenciais Supabase.
+  if (path === "/api/webhooks/hotmart" || path === "/luna") {
     return NextResponse.next({ request });
   }
 
@@ -40,7 +42,8 @@ export async function middleware(request: NextRequest) {
     "/login",
     "/registro",
     "/recuperar",
-    "/nova-senha",
+    "/redefinir",
+    "/luna",
   ];
 
   const isPublicRoute = publicRoutes.includes(path);

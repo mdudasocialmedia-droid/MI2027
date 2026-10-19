@@ -266,9 +266,16 @@ security definer
 set search_path = pg_catalog, public
 as $$
 begin
-  if new.email_confirmed_at is not null
-     and (tg_op = 'INSERT' or old.email_confirmed_at is null or lower(old.email) is distinct from lower(new.email)) then
-    perform public.link_hotmart_purchases_for_user(new.id, new.email);
+  if tg_op = 'INSERT' then
+    if new.email_confirmed_at is not null then
+      perform public.link_hotmart_purchases_for_user(new.id, new.email);
+    end if;
+  elsif tg_op = 'UPDATE' then
+    if new.email_confirmed_at is not null
+       and (old.email_confirmed_at is null
+            or lower(old.email) is distinct from lower(new.email)) then
+      perform public.link_hotmart_purchases_for_user(new.id, new.email);
+    end if;
   end if;
   return new;
 end;

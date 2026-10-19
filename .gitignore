@@ -5,3 +5,5 @@ out
 .DS_Store
 .env*
 !.env.example
+# Local reparse point created by npm/npx tooling; never a project artifact.
+npx

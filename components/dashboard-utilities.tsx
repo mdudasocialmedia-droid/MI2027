@@ -4,15 +4,11 @@ import { Bell, BookHeart, Check, Heart, Search, Target, X } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { occursOnDate, parseDate, type PlannerData } from "@/lib/planner-store";
+import { type DiaryEntry } from "@/lib/diary-storage";
+import { useDiaryStore } from "@/lib/use-diary-store";
 
-const DIARY_STORAGE_KEY = "mi2027-diary-v1";
 const READ_NOTIFICATIONS_KEY = "luna-planner-read-notifications";
-type DiaryEntry = { id: string; date: string; mood: number; content: string; gratitudes: string[]; createdAt: string; updatedAt: string };
 type NotificationItem = { id: string; title: string; detail: string; href: string };
-
-function loadDiaryEntries(): DiaryEntry[] {
-  try { const saved = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) ?? "[]"); return Array.isArray(saved) ? saved as DiaryEntry[] : []; } catch { return []; }
-}
 
 export function getNotifications(data: PlannerData): NotificationItem[] {
   const selected = data.selectedDate;
@@ -26,8 +22,7 @@ export function getNotifications(data: PlannerData): NotificationItem[] {
 
 export function SearchPanel({ data, onClose }: { data: PlannerData; onClose: () => void }) {
   const [query, setQuery] = useState("");
-  const [diary, setDiary] = useState<DiaryEntry[]>([]);
-  useEffect(() => { setDiary(loadDiaryEntries()); }, []);
+  const { entries: diary } = useDiaryStore();
   const results = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("es-ES");
     if (!needle) return [];
@@ -51,12 +46,12 @@ export function NotificationsPanel({ data, onClose, onReadAll }: { data: Planner
 }
 
 export function DiaryHomeSection({ date }: { date: string }) {
-  const [entries, setEntries] = useState<DiaryEntry[]>([]);
+  const { entries, persist } = useDiaryStore();
   const [content, setContent] = useState("");
   const [mood, setMood] = useState(3);
   const [saved, setSaved] = useState(false);
-  useEffect(() => { const next = loadDiaryEntries(); setEntries(next); const today = next.find((item) => item.date === date); setContent(today?.content ?? ""); setMood(today?.mood ?? 3); setSaved(false); }, [date]);
-  function save(event: FormEvent) { event.preventDefault(); const clean = content.trim(); if (!clean) return; const now = new Date().toISOString(); const current = entries.find((item) => item.date === date); const next = current ? entries.map((item) => item.id === current.id ? { ...item, content: clean, mood, updatedAt: now } : item) : [...entries, { id: `entry-${Date.now()}`, date, mood, content: clean, gratitudes: [], createdAt: now, updatedAt: now }]; setEntries(next); localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(next)); setSaved(true); }
+  useEffect(() => { const today = entries.find((item) => item.date === date); setContent(today?.content ?? ""); setMood(today?.mood ?? 3); setSaved(false); }, [date, entries]);
+  function save(event: FormEvent) { event.preventDefault(); const clean = content.trim(); if (!clean) return; const now = new Date().toISOString(); const current = entries.find((item) => item.date === date); const next = current ? entries.map((item) => item.id === current.id ? { ...item, content: clean, mood: mood as DiaryEntry["mood"], updatedAt: now } : item) : [...entries, { id: `entry-${Date.now()}`, date, mood: mood as DiaryEntry["mood"], content: clean, gratitudes: [], createdAt: now, updatedAt: now }]; if (persist(next)) setSaved(true); }
   const recent = entries.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
   return <section className="mt-7 grid gap-5 lg:grid-cols-[1.1fr_.9fr]"><article className="card overflow-hidden"><div className="bg-gradient-to-r from-[#F3EFFF] via-[#FFF0F5] to-[#FFF4DE] p-5 sm:p-6"><div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-[.15em] text-violet">Diario</p><h2 className="mt-1 font-display text-xl font-extrabold">Un momento para ti</h2></div><BookHeart className="text-coral" /></div></div><form onSubmit={save} className="p-5 sm:p-6"><div className="flex gap-2">{["😢", "😕", "😌", "😊", "🤩"].map((emoji, index) => <button type="button" key={emoji} onClick={() => setMood(index + 1)} className={`grid size-9 place-items-center rounded-xl ${mood === index + 1 ? "bg-violet/15 ring-2 ring-violet" : "bg-[#FFFCF8]"}`} aria-label={`Estado ${index + 1}`}>{emoji}</button>)}</div><textarea value={content} onChange={(event) => setContent(event.target.value)} rows={4} placeholder="¿Qué ha hecho especial este día?" className="field mt-4 resize-none" /><div className="mt-4 flex items-center justify-between gap-3"><p className="text-xs text-slate-400">{saved ? "Entrada guardada" : "Se guarda en tu diario actual"}</p><button className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-bold text-white"><Check size={16} /> Guardar</button></div></form></article><article className="card p-5 sm:p-6"><div className="flex items-center justify-between"><div><h2 className="font-display text-lg font-extrabold">Entradas recientes</h2><p className="mt-1 text-xs text-slate-400">Tus palabras, en un solo lugar.</p></div><Link href="/diario" className="text-xs font-bold text-violet">Ver diario</Link></div><div className="mt-4 space-y-3">{recent.length === 0 && <p className="py-5 text-center text-sm text-slate-400">Aún no hay entradas guardadas.</p>}{recent.map((entry) => <Link key={entry.id} href="/diario" className="block rounded-2xl bg-[#FFFCF8] p-3"><p className="text-xs font-bold text-violet">{entry.date}</p><p className="mt-1 line-clamp-2 text-sm text-slate-600">{entry.content}</p></Link>)}</div></article></section>;
 }

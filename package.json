@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test:hotmart": "node --experimental-strip-types --test tests/hotmart-validation.test.ts tests/hotmart-access-contract.test.ts"
+    "test:hotmart": "node --experimental-strip-types --test tests/hotmart-validation.test.ts tests/hotmart-access-contract.test.ts",
+    "test:planner-storage": "node --experimental-strip-types --test tests/planner-storage.test.ts",
+    "test:diary-storage": "node --experimental-strip-types --test tests/diary-storage.test.ts",
+    "test:middleware": "node --experimental-strip-types --test tests/middleware-access-contract.test.ts",
+    "test:profile-schema": "node --experimental-strip-types --test tests/profile-schema-contract.test.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
@@ -27,5 +31,10 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": "8.5.29"
+    }
   }
 }
