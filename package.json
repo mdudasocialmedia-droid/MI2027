@@ -7,11 +7,13 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "test": "npm run test:planner-storage && npm run test:diary-storage && npm run test:middleware && npm run test:profile-schema && npm run test:hotmart && npm run test:pwa",
     "test:hotmart": "node --experimental-strip-types --test tests/hotmart-validation.test.ts tests/hotmart-access-contract.test.ts",
     "test:planner-storage": "node --experimental-strip-types --test tests/planner-storage.test.ts",
     "test:diary-storage": "node --experimental-strip-types --test tests/diary-storage.test.ts",
     "test:middleware": "node --experimental-strip-types --test tests/middleware-access-contract.test.ts",
-    "test:profile-schema": "node --experimental-strip-types --test tests/profile-schema-contract.test.ts"
+    "test:profile-schema": "node --experimental-strip-types --test tests/profile-schema-contract.test.ts",
+    "test:pwa": "node --experimental-strip-types --test tests/pwa-contract.test.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",

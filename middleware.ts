@@ -9,7 +9,12 @@ export async function middleware(request: NextRequest) {
   // de tocar no Supabase. Todas as rotas de utilizador continuam protegidas abaixo.
   // As páginas públicas não dependem de sessão. Retorná-las antes de criar o
   // cliente evita que uma prévia local da landing page exija credenciais Supabase.
-  if (path === "/api/webhooks/hotmart" || path === "/luna") {
+  if (
+    path === "/api/webhooks/hotmart" ||
+    path === "/luna" ||
+    path === "/manifest.webmanifest" ||
+    path === "/service-worker.js"
+  ) {
     return NextResponse.next({ request });
   }
 

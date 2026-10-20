@@ -1,0 +1,17 @@
+{
+  "name": "Luna Planner",
+  "short_name": "Luna Planner",
+  "description": "Planner digital para organizar os teus dias e objetivos.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff7fb",
+  "theme_color": "#d96899",
+  "lang": "es-ES",
+  "icons": [
+    { "src": "/icons/luna-planner-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/luna-planner-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/luna-planner-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
